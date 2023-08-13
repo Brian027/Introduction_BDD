@@ -1,101 +1,78 @@
 <?php
 require('inc/framework.php');
 
-// Listing d'une table
-    // => Lister les images dans la table t_photo
+// Initialisation des Sessions ($_SESSION)
+session_name(SESSION_NAME);
+session_start();
 
-    // Etape 1 : Creation de la requete SQL
-    $sql = "SELECT ";
-    $sql.= " p.photographie AS photo,";
-    $sql.= " p.titre AS titre,";
-    $sql.= " p.description AS description,";
-    $sql.= " CONCAT(u.prenom, ' ' , u.nom) AS utilisateur";
-    $sql.= " FROM t_photo p";
-    $sql.= " LEFT JOIN t_user u ON u.id=p.fk_user";
+// Gestion des routes !
 
-    // Pour afficher la requete directement
-    // echo $sql;
-    // exit();
-
-    // Vérification si retour d'un formulaire
-    if( isset($_POST['search']) && !empty($_POST['search']) ){
-        // Si je suis ici => Il y a une recherche
-        $sql.= " WHERE p.titre LIKE '%".$_POST['search']."%'";
-        $sql.= " OR p.description LIKE '%".$_POST['search']."%'";
-        $sql.= " OR CONCAT(u.prenom, ' ' , u.nom) LIKE '%".$_POST['search']."%'";
+if(isset($_SESSION[SESSION_NAME]['id_user']) && !empty($_SESSION[SESSION_NAME]['id_user'])) {
+    if (isset($_GET['page']) && isset($page[$_GET['page']])) {
+        // La page demandé existe => on va pouvoir l'afficher !
+        $url_php = $page[$_GET['page']];
+    } else {
+        // Forcer l'affichage de la page d'accueil
+        $url_php = $page['home'];
     }
+} else {
+    // On force le login !
+    $url_php = $page['login'];
+}
 
-    // Etape 2 : Execution de la requete sur le serveur de BDD
-    $rs = mysqli_query($link,$sql);
-
-    // Préparation du retour
-    $html = '<div class="gridContainer">';
-
-    // Etape 3 : Test du retour de la requete
-    if($rs && mysqli_num_rows($rs)){
-        // Si je suis ici => Tout va bien ! la requete est correcte et il y a au moins un enregistrement
-        // Etape 4 : Je parcours les enregistrements de ma requete
-        while( $data = mysqli_fetch_assoc($rs) ){
-            $html.= '<div class="gridItem">';
-            $html.= '    <img src="images/'.$data['photo'].'" />';
-            $html.= '    <div class="overlay"></div>';
-            $html.= '    <div class="bodyContent">';
-            $html.=     '    <div class="title"><h2>'.$data['titre'].'</h2></div>';
-            $html.=     '    <div class="description"><p>'.$data['description'].'</p></div>';
-            $html.=     '    <div class="auteur"><p>Par: <a>'.$data['utilisateur'].'</a></p></div>';
-            $html.= '   </div>';
-            $html.= '</div>';
-        }
-    }
-    $html.= '</div>';
+// Gestion de la procedure
+$url_php_proc = str_replace('.php', '_proc.php', $url_php);
+if (is_file($url_php_proc)) {
+    include $url_php_proc;
+}
 
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formation IFR</title>
     <link rel="stylesheet" href="css/interface.css">
+    <link rel="stylesheet" type="text/css" href="css/shop.css"/>
+    <title>
+        <?php
+        $url_php_title = str_replace('.php', '_title.php', $url_php);
+        if (is_file($url_php_title)) {
+            include $url_php_title;
+        } else {
+            echo "Formation IFR | Accueil";
+        }
+        ?>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <?php
+    $url_php_head = str_replace('.php', '_head.php', $url_php);
+    ?>
 </head>
-<body>
-<header>
-        <nav>
-            <div class="logo">
-                <p>Sql intro</p>
-            </div>
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="inscription.php">Inscription</a></li>
-                <li><a href="profil.php">Profil</a></li>
-                <li><a href="upload.php">Upload</a></li>
-            </ul>
-            <div class="groupBtn">
-                <div class="search">
-                    <form action="index.php" method="post">
-                        <div class="formField">
-                          <input type="text" name="search" placeholder="Rechercher" />  
-                        </div>
-                        <button><i class="bx bx-search"></i></button>
-                    </form>
-                </div>
-                <div class="user">
-                <button class="login">
-                    <a href="login.php">
-                        <i class='bx bx-log-in'></i>
-                        <span>Connexion</span>
-                    </a>
-                </button>
-            </div>
-            </div>
-            
-        </nav>
-        <main>
-                <?php
-                 echo $html;
-                ?>
-        </main>
-    </header>
-</body>
+    <?php
+        include $url_php;
+    ?>
+    <script>
+        // Navbar Sticky Scroll
+        window.addEventListener("scroll", function() {
+            var nav = document.querySelector("nav");
+            nav.classList.toggle("sticky", window.scrollY > 20);
+        })
+        const dropdown = document.querySelector(".shopDropdown");
+        const btnDropdown = document.querySelector(".shopDropdown .shop");
+        const closeBtnDropdown = document.querySelector(".shopDropdown .close");
+
+        btnDropdown.addEventListener("click", () => {
+            dropdown.classList.toggle("active");
+        })
+        closeBtnDropdown.addEventListener("click", () => {
+            if (dropdown.classList.contains("active")) {
+                dropdown.classList.remove("active");
+            }
+        })
+    </script>
+    <script src="ajax/ajaxForm.js"></script>
+
 </html>

@@ -5,4 +5,5 @@
     define('NAME_BDD','intro_bdd');
     define('ERROR_SERVEUR','Erreur Connexion Serveur BDD');
     define('ERROR_BDD','Erreur selection BDD');
+    define('SESSION_NAME','Formation_IFR');
 ?>
